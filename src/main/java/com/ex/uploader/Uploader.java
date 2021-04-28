@@ -2,7 +2,7 @@ package com.ex.uploader;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.ex.uploader.config.S3Initializer;
 
 import java.io.File;
@@ -42,6 +42,9 @@ public class Uploader {
                     System.out.println("Exiting...");
                     quit = true;
                     break;
+                case "view":
+                    getFiles(client);
+                    break;
                 default:
                     System.out.println("Unrecognized commands "+cmd);
             }
@@ -60,10 +63,25 @@ public class Uploader {
         System.out.println("\nComplete!");
     }
 
+    private static void getFiles(AmazonS3 client){
+        System.out.println("Files in folder:");
+        System.out.println("NAME    SIZE");
+        ListObjectsRequest request = new ListObjectsRequest().withBucketName(bucketName).withPrefix(folderName);
+        ObjectListing objects = client.listObjects(request);
+        if(objects.getObjectSummaries().isEmpty())
+            System.out.println("Empty...");
+        else{
+            for(S3ObjectSummary s : objects.getObjectSummaries()){
+                System.out.println(s.getKey()+" "+s.getSize());
+            }
+        }
+    }
+
     private static void help(){
         System.out.println("Place file to be uploaded in directory 'upload'\n");
         System.out.println("COMMANDS: \n exit - exit application" +
                 "\n help - view commands and tips" +
-                "\n upload - upload a file");
+                "\n upload - upload a file" +
+                "\n view - view all files in folder");
     }
 }
